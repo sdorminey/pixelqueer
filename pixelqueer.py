@@ -1,4 +1,4 @@
-import os
+from os import path, listdir
 import sys
 
 import scipy
@@ -8,39 +8,48 @@ import numpy.linalg as lin
 import matplotlib.pyplot as plt
 import Image as pil
 
-path = sys.argv[1]
-male_path = os.path.abspath(os.path.join(path, "Male"))
-female_path = os.path.abspath(os.path.join(path, "Female"))
-male_faces = [os.path.abspath(os.path.join(male_path, f)) for f in os.listdir(male_path)]
-female_faces = [os.path.abspath(os.path.join(female_path, f)) for f in os.listdir(female_path)]
+def loadface(image_path):
+    face = misc.imread(image_path).astype(np.float32)
+    face = face.mean(axis=2)
+    # Subtract the mean pixel value from the face.
+    face = face - face.mean()
+    return face
 
-def eigenfaces(images):
-    faces = None
-    face_shape = None
-    for k in xrange(len(images)):
-        image = images[k]
-        print image
-        face = misc.imread(image).astype(np.float32)
-        if face_shape is None:
-            face_shape = face.shape
-        face = face.mean(axis=2)
-        face = face - face.mean()
-        face_vector = face.flatten()
-        if faces is None:
-            faces = np.zeros((face_vector.size, len(images)))
-        faces[:, k] = face_vector[:]
-    print faces.size
-    print faces.shape
-    U, V, T = lin.svd(faces, full_matrices=False)
+def eigenfaces(image_paths):
+    face_matrix = np.array([loadface(f).flatten() for f in image_paths])
+    print "Face matrix:", face_matrix.shape, face_matrix.size
+
+    # According to wikipedia on eigenfaces, the upper singular values are equivalent
+    # to the eigenvectors of the autocorrelation matrix of images!
+    U, V, T = lin.svd(face_matrix.transpose(), full_matrices=False)
     
-    for k in xrange(len(images)):
-        print U.shape
-        print face_shape
-        eigenface = U[:, k].reshape((face_shape[0], face_shape[1]))
-        plt.imshow(eigenface)
-        plt.show()
-    return eigenfaces
+    return U
+
+def project(basis, vector):
+    return basis * vector
+
+def swap_gender(training_data_path, source_image):
+    male_path = path.abspath(path.join(training_data_path, "Male"))
+    female_path = path.abspath(path.join(training_data_path, "Female"))
+    male_faces = [path.abspath(path.join(male_path, f)) for f in listdir(male_path)]
+    female_faces = [path.abspath(path.join(female_path, f)) for f in listdir(female_path)]
+
+    # Build the eigenfaces for the male and female images in the training set.
+    male_eigenfaces = eigenfaces(male_faces)
+    print "Male eigenfaces:", male_eigenfaces.shape, male_eigenfaces.size
+    female_eigenfaces = eigenfaces(female_faces)
+
+    # Load the source image and project it onto the male eigenfaces.
+    source_face = loadface(source_image)
+    source_male_parameters = male_eigenfaces.transpose() * source_face.flatten()
+
+    # Visualize how the projection looks!
+    target_image = male_eigenfaces.transpose() * source_male_parameters
+    target_image = target_image.sum(axis=0)
+    print "Target shape:", target_image.shape, "Source shape:", source_face.shape
+    target_image = target_image.reshape(source_face.shape)
+    plt.imshow(target_image)
+    plt.show()
 
 print "Hello world!"
-#male_eigenfaces = eigenfaces(male_faces)
-female_eigenfaces = eigenfaces(female_faces)
+swap_gender(sys.argv[1], sys.argv[2])

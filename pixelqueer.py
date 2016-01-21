@@ -10,7 +10,9 @@ import Image as pil
 
 def loadimage(image_path):
     face = misc.imread(image_path).astype(np.float32)
+    # Adjust so range is [-1, 1].
     face = face.mean(axis=2)
+    face = (face - 127.0) / 127.0
     # Subtract the mean pixel value from the face.
     face = face - face.mean()
     return face

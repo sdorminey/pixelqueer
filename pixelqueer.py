@@ -18,7 +18,7 @@ def loadimage(image_path):
     face = face - face.mean()
     return face
 
-def eigenfaces(face_matrix):
+def eigenfaces(face_matrix, max_faces):
     print "Face matrix:", face_matrix.shape, face_matrix.size
 
     # According to wikipedia on eigenfaces, the upper singular values are equivalent
@@ -26,7 +26,7 @@ def eigenfaces(face_matrix):
     U, V, T = lin.svd(face_matrix.transpose(), full_matrices=False)
     
     # U     e x w   Eigenface vectors as rows.
-    eigenfaces = U.transpose()
+    eigenfaces = np.array(U.transpose()[0:max_faces,:])
     print "Eigenfaces:", eigenfaces.shape
     
     return eigenfaces
@@ -43,10 +43,10 @@ def learn_transition(trans_eigenfaces, cis_eigenfaces, training_images):
     # training_images       w   x s     Training images (as rows)
     print "Training images:", training_images.shape
 
-    cis_correct_values = np.dot(cis_eigenfaces, training_images.transpose())
+    cis_correct_values = np.dot(cis_eigenfaces, training_images.transpose()).transpose()
     print "Correct Values:", cis_correct_values.shape
 
-    trans_starting_values = np.dot(trans_eigenfaces, training_images.transpose())
+    trans_starting_values = np.dot(trans_eigenfaces, training_images.transpose()).transpose()
     print "Starting values:", trans_starting_values.shape
 
     transition_matrix, residuals, rank, singular_values = lin.lstsq(trans_starting_values, cis_correct_values)
@@ -64,13 +64,13 @@ def load_faces(root_path, subfolder_name):
     images = [loadimage(p) for p in image_paths]
     return (np.array([i.flatten() for i in images]), images[0].shape)
 
-def learn(training_data_path):
+def learn(training_data_path, max_eigenfaces):
     male_faces, image_shape = load_faces(training_data_path, "Male")
     female_faces, _ = load_faces(training_data_path, "Male")
 
     # Build the eigenfaces for the male and female images in the training set.
-    male_eigenfaces = eigenfaces(male_faces)
-    female_eigenfaces = eigenfaces(female_faces)
+    male_eigenfaces = eigenfaces(male_faces, max_eigenfaces)
+    female_eigenfaces = eigenfaces(female_faces, max_eigenfaces)
     print "Female faces:", female_faces.shape
 
     mtf_matrix = learn_transition(male_eigenfaces, female_eigenfaces, female_faces)
@@ -101,7 +101,7 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
 
 print "Hello world!"
 
-male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1])
+male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1], 10)
 original_image = loadimage(sys.argv[2])
 altered_image = swap_gender(male_eigenfaces, female_eigenfaces, mtf_matrix, sys.argv[2])
 

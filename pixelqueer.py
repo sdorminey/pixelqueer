@@ -75,7 +75,6 @@ def learn(training_data_path, max_eigenfaces):
 
     mtf_matrix = learn_transition(male_eigenfaces, female_eigenfaces, female_faces)
     ftm_matrix = learn_transition(female_eigenfaces, male_eigenfaces, male_faces)
-    ftm_matrix = None
 
     return (male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix)
     
@@ -99,15 +98,26 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
     # Unflatten back into 2D matrix and return.
     return target_face.reshape(source_image.shape)
 
+def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_image):
+    original_image = loadimage(source_image)
+    altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_image)
+
+    f = plt.figure()
+    f.add_subplot(2, 1, 1)
+    plt.imshow(original_image, cmap = cm.Greys_r)
+    f.add_subplot(2, 1, 2)
+    plt.imshow(altered_image, cmap = cm.Greys_r)
+    plt.show()
+
 print "Hello world!"
 
 male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1], 10)
-original_image = loadimage(sys.argv[2])
-altered_image = swap_gender(male_eigenfaces, female_eigenfaces, mtf_matrix, sys.argv[2])
-
-f = plt.figure()
-f.add_subplot(2, 1, 1)
-plt.imshow(original_image, cmap = cm.Greys_r)
-f.add_subplot(2, 1, 2)
-plt.imshow(altered_image, cmap = cm.Greys_r)
-plt.show()
+original_image = sys.argv[2]
+if sys.argv[3] == "mtf":
+    print "MTF Mode"
+    alter_image(male_eigenfaces, female_eigenfaces, mtf_matrix, original_image)
+elif sys.argv[3] == "ftm":
+    print "FTM Mode"
+    alter_image(female_eigenfaces, male_eigenfaces, ftm_matrix, original_image)
+else:
+    print "Does not compute!!"

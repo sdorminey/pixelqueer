@@ -66,7 +66,7 @@ def load_faces(root_path, subfolder_name):
 
 def learn(training_data_path, max_eigenfaces):
     male_faces, image_shape = load_faces(training_data_path, "Male")
-    female_faces, _ = load_faces(training_data_path, "Male")
+    female_faces, _ = load_faces(training_data_path, "Female")
 
     # Build the eigenfaces for the male and female images in the training set.
     male_eigenfaces = eigenfaces(male_faces, max_eigenfaces)

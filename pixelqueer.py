@@ -26,7 +26,10 @@ def eigenfaces(face_matrix):
     U, V, T = lin.svd(face_matrix.transpose(), full_matrices=False)
     
     # U     e x w   Eigenface vectors as rows.
-    return U.transpose()
+    eigenfaces = U.transpose()
+    print "Eigenfaces:", eigenfaces.shape
+    
+    return eigenfaces
 
 def learn_faces(male_faces, female_faces):
     male_eigenfaces = eigenfaces(male_faces)
@@ -43,12 +46,14 @@ def learn_transition(trans_eigenfaces, cis_eigenfaces, training_images):
     cis_correct_values = np.dot(cis_eigenfaces, training_images.transpose())
     print "Correct Values:", cis_correct_values.shape
 
-    trans_starting_values = np.dot(trans_eigenfaces, training_images.transpose()).transpose()
+    trans_starting_values = np.dot(trans_eigenfaces, training_images.transpose())
     print "Starting values:", trans_starting_values.shape
 
-    transition_matrix, residuals, s, singular_values = lin.lstsq(trans_starting_values, cis_correct_values)
+    transition_matrix, residuals, rank, singular_values = lin.lstsq(trans_starting_values, cis_correct_values)
     transition_matrix = transition_matrix.transpose()
-    print "Transition matrix:", transition_matrix.shape
+    print "Residuals:", residuals
+    print "Transition matrix:", transition_matrix.shape, transition_matrix
+    print "Rank:", rank
 
     return transition_matrix
 
@@ -61,7 +66,7 @@ def load_faces(root_path, subfolder_name):
 
 def learn(training_data_path):
     male_faces, image_shape = load_faces(training_data_path, "Male")
-    female_faces, _ = load_faces(training_data_path, "Female")
+    female_faces, _ = load_faces(training_data_path, "Male")
 
     # Build the eigenfaces for the male and female images in the training set.
     male_eigenfaces = eigenfaces(male_faces)

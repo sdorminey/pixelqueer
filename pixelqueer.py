@@ -35,8 +35,19 @@ def learn_transition(trans_eigenfaces, cis_eigenfaces, training_images):
     # trans_eigenfaces      e_t x w     Eigenface basis for the opposite gender.
     # cis_eigenfaces        e_c x w     Eigenface basis for the original gender.
     # training_images       w   x s     Training images (as rows)
+    print "Training images:", training_images.shape
 
-    return lin.lstsq(trans_eigenfaces * training_images, cis_eigenfaces * training_images)
+    cis_correct_values = np.dot(cis_eigenfaces, training_images.transpose())
+    print "Correct Values:", cis_correct_values.shape
+
+    trans_starting_values = np.dot(trans_eigenfaces, training_images.transpose()).transpose()
+    print "Starting values:", trans_starting_values.shape
+
+    transition_matrix, residuals, s, singular_values = lin.lstsq(trans_starting_values, cis_correct_values)
+    transition_matrix = transition_matrix.transpose()
+    print "Transition matrix:", transition_matrix.shape
+
+    return transition_matrix
 
 # Loads face vectors
 def load_faces(root_path, subfolder_name):
@@ -52,9 +63,11 @@ def learn(training_data_path):
     # Build the eigenfaces for the male and female images in the training set.
     male_eigenfaces = eigenfaces(male_faces)
     female_eigenfaces = eigenfaces(female_faces)
+    print "Female faces:", female_faces.shape
 
     mtf_matrix = learn_transition(male_eigenfaces, female_eigenfaces, female_faces)
     ftm_matrix = learn_transition(female_eigenfaces, male_eigenfaces, male_faces)
+    ftm_matrix = None
 
     return (male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix)
     
@@ -65,22 +78,21 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
     # source_face           w   x 1     Source image vector.
 
     # source_params         e_s x 1     Projection onto source basis.
-    source_image = loadface(source_image_path)
+    source_image = loadimage(source_image_path)
     source_face  = source_image.flatten()
-    source_params = source_eigenfaces * source_face
+    source_params = np.dot(source_eigenfaces, source_face)
 
     # target_params         e_t x 1     Transition from source params to target.
-    target_params = transition_matrix * source_params
+    target_params = np.dot(transition_matrix, source_params)
 
     # target_face           w x 1       Deprojected face.
-    target_face = target_eigenfaces.transpose() * target_params
+    target_face = np.dot(target_eigenfaces.transpose(), target_params)
 
     # Unflatten back into 2D matrix and return.
-    return target_image.reshape(source_face.shape)
+    return target_face.reshape(source_image.shape)
 
 print "Hello world!"
 male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1])
 image = swap_gender(male_eigenfaces, female_eigenfaces, mtf_matrix, sys.argv[2])
-
 plt.imshow(image)
 plt.show()

@@ -6,6 +6,7 @@ from scipy import misc
 import numpy as np
 import numpy.linalg as lin
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import Image as pil
 
 def loadimage(image_path):
@@ -94,7 +95,14 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
     return target_face.reshape(source_image.shape)
 
 print "Hello world!"
+
 male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1])
-image = swap_gender(male_eigenfaces, female_eigenfaces, mtf_matrix, sys.argv[2])
-plt.imshow(image)
+original_image = loadimage(sys.argv[2])
+altered_image = swap_gender(male_eigenfaces, female_eigenfaces, mtf_matrix, sys.argv[2])
+
+f = plt.figure()
+f.add_subplot(2, 1, 1)
+plt.imshow(original_image, cmap = cm.Greys_r)
+f.add_subplot(2, 1, 2)
+plt.imshow(altered_image, cmap = cm.Greys_r)
 plt.show()

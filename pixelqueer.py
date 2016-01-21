@@ -52,7 +52,7 @@ def learn_transition(trans_eigenfaces, cis_eigenfaces, training_images):
     transition_matrix, residuals, rank, singular_values = lin.lstsq(trans_starting_values, cis_correct_values)
     transition_matrix = transition_matrix.transpose()
     print "Residuals:", residuals
-    print "Transition matrix:", transition_matrix.shape, transition_matrix
+    print "Transition matrix:", transition_matrix.shape
     print "Rank:", rank
 
     return transition_matrix

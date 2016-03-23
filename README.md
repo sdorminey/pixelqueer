@@ -29,3 +29,13 @@ Let T be the matrix which minimizes
 x is a female input image. First, M is applied to it, to project x into the vector space of MALE eigenfaces. E(M, x) would be expected to be high. But if we had a way of mapping the projection onto the vector space of FEMALE eigenface, we'd have a better basis vector that we know COULD get closer to the image (i.e. E(??M, x) < E(M, x).)
 
 So, let's call that matrix T (for trans! :D). Then we'd be able to use the female basis vectors for reconstruction via having T transform the male projection onto the female vector space, using T.
+
+# Usage
+Marshal ColorFERET data:
+python2 convert\_colorferet.py ../../colorferet ../../faces
+
+Learn:
+python2 pixelqueer.py  --source ../../faces --maxEigenfaces 32 --maxImages 128 learn brain/eig\_32\_img\_128.mgs
+
+Run:
+python2 pixelqueer.py --direction mtf --image ../../faces/Male/00001\_930831\_fa\_a.ppm run brain/eig\_32\_img\_128.mgs

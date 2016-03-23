@@ -7,7 +7,7 @@ import numpy as np
 import numpy.linalg as lin
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import Image as pil
+import PIL as pil
 
 def loadimage(image_path):
     face = misc.imread(image_path).astype(np.float32)
@@ -58,15 +58,16 @@ def learn_transition(trans_eigenfaces, cis_eigenfaces, training_images):
     return transition_matrix
 
 # Loads face vectors
-def load_faces(root_path, subfolder_name):
+def load_faces(root_path, subfolder_name, max_faces):
     subfolder_path = path.abspath(path.join(root_path, subfolder_name))
     image_paths = [path.join(subfolder_path, f) for f in listdir(subfolder_path)]
+    image_paths = image_paths[:max_faces]
     images = [loadimage(p) for p in image_paths]
     return (np.array([i.flatten() for i in images]), images[0].shape)
 
-def learn(training_data_path, max_eigenfaces):
-    male_faces, image_shape = load_faces(training_data_path, "Male")
-    female_faces, _ = load_faces(training_data_path, "Female")
+def learn(training_data_path, max_eigenfaces, max_faces):
+    male_faces, image_shape = load_faces(training_data_path, "Male", max_faces)
+    female_faces, _ = load_faces(training_data_path, "Female", max_faces)
 
     # Build the eigenfaces for the male and female images in the training set.
     male_eigenfaces = eigenfaces(male_faces, max_eigenfaces)
@@ -111,7 +112,7 @@ def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_
 
 print "Hello world!"
 
-male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1], 10)
+male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1], 128, 128)
 original_image = sys.argv[2]
 if sys.argv[3] == "mtf":
     print "MTF Mode"

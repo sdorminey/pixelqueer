@@ -1,5 +1,7 @@
 from os import path, listdir
 import sys
+import argparse
+import pickle
 
 import scipy
 from scipy import misc
@@ -112,13 +114,35 @@ def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_
 
 print "Hello world!"
 
-male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(sys.argv[1], 128, 128)
-original_image = sys.argv[2]
-if sys.argv[3] == "mtf":
-    print "MTF Mode"
-    alter_image(male_eigenfaces, female_eigenfaces, mtf_matrix, original_image)
-elif sys.argv[3] == "ftm":
-    print "FTM Mode"
-    alter_image(female_eigenfaces, male_eigenfaces, ftm_matrix, original_image)
-else:
-    print "Does not compute!!"
+parser = argparse.ArgumentParser(description="Genderbending!")
+parser.add_argument("action", choices=["learn", "run"])
+parser.add_argument("brainFile", "Destination file for learned data")
+parser.add_argument("--source", "Source image folder containing Male and Female subfolders")
+parser.add_argument("--direction", choices=["mtf", "ftm"], help="Direction to bend gender")
+parser.add_argument("--maxEigenfaces", "Maximum number of eigenfaces to use", default=max)
+parser.add_argument("--maxImages", "Maximum number of images to use (per gender)", default=max)
+parser.add_argument("--image", "Image to load (run mode only)")
+
+args = parser.parse_args(sys.argv[1:].split())
+
+if args.action == "learn":
+    male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(args.source, args.maxEigenfaces, args.maxImages)
+    learn_file = open(args.brainFile, "wb")
+    pickle.dump(male_eigenfaces, learn_file)
+    pickle.dump(female_eigenfaces, learn_file)
+    pickle.dump(mtf_matrix, learn_file)
+    pickle.dump(ftm_matrix, learn_file)
+elif args.action == "run":
+    learn_file = open(args.brainFile, "rb")
+    male_eigenfaces = pickle.load(learn_file)
+    female_eigenfaces = pickle.load(learn_file)
+    mtf_matrix = pickle.load(learn_file)
+    ftm_matrix = pickle.load(learn_file)
+
+    original_image = parser.image
+    if args.direction == "mtf":
+        print "MTF Mode"
+        alter_image(male_eigenfaces, female_eigenfaces, mtf_matrix, original_image)
+    elif sys.argv[3] == "ftm":
+        print "FTM Mode"
+        alter_image(female_eigenfaces, male_eigenfaces, ftm_matrix, original_image)

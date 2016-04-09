@@ -78,7 +78,13 @@ class Frame:
             cv2.imshow("Video", altered_image)
 
             # This is necessary or the image won't display!
-            cv2.waitKey(1)
+            keyPressed = cv2.waitKey(1)
+
+            # Switch from MTF to FTM, as necessary.
+            if keyPressed == ord('f'):
+                self.current = self.mtf_mirror
+            if keyPressed == ord('m'):
+                self.current = self.ftm_mirror
     
 parser = argparse.ArgumentParser(description="Pixelqueer mirror")
 parser.add_argument("brain", help="Path to brain file (created by cmd.py)")

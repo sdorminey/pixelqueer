@@ -10,6 +10,7 @@ import numpy.linalg as lin
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import PIL as pil
+from PIL import Image
 
 def loadimage(image_path):
     face = misc.imread(image_path).astype(np.float32)
@@ -104,13 +105,51 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
 def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_image):
     original_image = loadimage(source_image)
     altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_image)
+    return altered_image
 
+def plot_image(original_image, altered_image):
     f = plt.figure()
     f.add_subplot(2, 1, 1)
     plt.imshow(original_image, cmap = cm.Greys_r)
     f.add_subplot(2, 1, 2)
     plt.imshow(altered_image, cmap = cm.Greys_r)
     plt.show()
+
+def run(args):
+    if args.action == "learn":
+        male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(args.source, args.maxEigenfaces, args.maxImages)
+        learn_file = open(args.brain, "wb")
+        pickle.dump(male_eigenfaces, learn_file)
+        pickle.dump(female_eigenfaces, learn_file)
+        pickle.dump(mtf_matrix, learn_file)
+        pickle.dump(ftm_matrix, learn_file)
+
+    elif args.action == "run":
+        learn_file = open(args.brain, "rb")
+        male_eigenfaces = pickle.load(learn_file)
+        female_eigenfaces = pickle.load(learn_file)
+        mtf_matrix = pickle.load(learn_file)
+        ftm_matrix = pickle.load(learn_file)
+
+        original_image = args.image
+        altered_image = None
+        print args.direction
+        if args.direction == "mtf":
+            print "MTF Mode"
+            altered_image = alter_image(male_eigenfaces, female_eigenfaces, mtf_matrix, original_image)
+        elif args.direction == "ftm":
+            print "FTM Mode"
+            altered_image = alter_image(female_eigenfaces, male_eigenfaces, ftm_matrix, original_image)
+        else:
+            print "Non-binary gender not yet supported :("
+            return
+
+        if args.out is not None:
+            altered_image_to_save = Image.fromarray(((altered_image+1.0)/2.0 * 255).astype(np.uint8))
+            altered_image_to_save.save(args.out)
+        else:
+            plot_image(original_image, altered_image)
+
 
 print "Hello world!"
 
@@ -122,30 +161,7 @@ parser.add_argument("--direction", choices=["mtf", "ftm"], help="Direction to be
 parser.add_argument("--maxEigenfaces", help="Maximum number of eigenfaces to use", default=max, type=int)
 parser.add_argument("--maxImages", help="Maximum number of images to use (per gender)", default=max, type=int)
 parser.add_argument("--image", help="Image to load (run mode only)")
+parser.add_argument("--out", help="Output file path")
 
 args = parser.parse_args(sys.argv[1:])
-
-if args.action == "learn":
-    male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix = learn(args.source, args.maxEigenfaces, args.maxImages)
-    learn_file = open(args.brain, "wb")
-    pickle.dump(male_eigenfaces, learn_file)
-    pickle.dump(female_eigenfaces, learn_file)
-    pickle.dump(mtf_matrix, learn_file)
-    pickle.dump(ftm_matrix, learn_file)
-elif args.action == "run":
-    learn_file = open(args.brain, "rb")
-    male_eigenfaces = pickle.load(learn_file)
-    female_eigenfaces = pickle.load(learn_file)
-    mtf_matrix = pickle.load(learn_file)
-    ftm_matrix = pickle.load(learn_file)
-
-    original_image = args.image
-    print args.direction
-    if args.direction == "mtf":
-        print "MTF Mode"
-        alter_image(male_eigenfaces, female_eigenfaces, mtf_matrix, original_image)
-    elif args.direction == "ftm":
-        print "FTM Mode"
-        alter_image(female_eigenfaces, male_eigenfaces, ftm_matrix, original_image)
-    else:
-        print "Non-binary gender not yet supported :("
+run(args)

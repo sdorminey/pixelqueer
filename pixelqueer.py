@@ -82,14 +82,13 @@ def learn(training_data_path, max_eigenfaces, max_faces):
 
     return (male_eigenfaces, female_eigenfaces, mtf_matrix, ftm_matrix)
     
-def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_image_path):
+def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_image):
     # source_eigenfaces     e_s x w     Eigenface basis for source gender.
     # target_eigenfaces     e_t x w     Eigenface basis for target gender.
     # transition_matrix     e_s x e_t   Transitions from source basis to target basis.
     # source_face           w   x 1     Source image vector.
 
     # source_params         e_s x 1     Projection onto source basis.
-    source_image = loadimage(source_image_path)
     source_face  = source_image.flatten()
     source_params = np.dot(source_eigenfaces, source_face)
 
@@ -104,7 +103,7 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
 
 def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_image):
     original_image = loadimage(source_image)
-    altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_image)
+    altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, load_image(source_image))
     return altered_image
 
 def plot_image(original_image, altered_image):

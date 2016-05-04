@@ -16,8 +16,8 @@ class Mirror:
 
     # Projects a source image onto a new, gender-bent target image.
     def project(self, source_image):
-        return source_image
-        #return queer.swap_gender(self.cis_eigenfaces, self.trans_eigenfaces, self.trans_matrix, source_image)
+        #return source_image
+        return queer.swap_gender(self.cis_eigenfaces, self.trans_eigenfaces, self.trans_matrix, source_image)
 
 # The frame holds two mirrors, letting the user toggle between them.
 class Frame:

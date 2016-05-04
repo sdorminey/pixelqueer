@@ -11,15 +11,27 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import PIL as pil
 from PIL import Image
+from config import Config
+from processor import FaceProcessor
+import cv2
+
+config = Config()
+p = FaceProcessor(config)
 
 def loadimage(image_path):
-    face = misc.imread(image_path).astype(np.float32)
-    # Adjust so range is [-1, 1].
-    face = face.mean(axis=2)
+    print "Loading", image_path
+    frame = misc.imread(image_path)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    coords = p.locate_face(frame)
+    assert coords != None
+
+    face = p.extract_region(frame, coords)
     face = (face - 127.0) / 127.0
-    # Subtract the mean pixel value from the face.
     face = face - face.mean()
-    return face
+
+    resized_face = cv2.resize(face, (config.eigen_w, config.eigen_h), interpolation = cv2.INTER_LINEAR)
+    return resized_face
 
 def eigenfaces(face_matrix, max_faces):
     print "Face matrix:", face_matrix.shape, face_matrix.size

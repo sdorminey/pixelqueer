@@ -4,5 +4,6 @@
     "EigenW": 256,
     "EigenH": 256,
     "FaceMinW": 100,
-    "FaceMinH": 100
+    "FaceMinH": 100,
+    "ShowBackground": "true"
 }

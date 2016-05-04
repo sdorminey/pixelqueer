@@ -41,24 +41,27 @@ class Frame:
 
         # Our camera is started here.
         print "Opening shutter.."
-        self.cam = cv2.VideoCapture(0)
-
-        # Temp: store dimensions here. We should really pickle 'em.
-        self.eigen_w = 768
-        self.eigen_h = 512
+        self.cam = cv2.VideoCapture(1)
+        cv2.namedWindow("Video", cv2.WND_PROP_FULLSCREEN)          
+        cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
 
     def capture_image(self):
         # Get an image frame from the camera.
         status, frame = self.cam.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = frame.transpose().copy()
         coords = self.p.locate_face(frame)
         if coords == None:
-            return frame
+            if self.config.show_background:
+                return frame
+            return np.zeros(frame.shape, frame.dtype)
 
-        cv2.rectangle(frame, (coords.x, coords.y), (coords.x+coords.w, coords.y+coords.h), 0, 2)
+        # Debug
+        #cv2.rectangle(frame, (coords.x, coords.y), (coords.x+coords.w, coords.y+coords.h), 0, 2)
 
         face = self.p.extract_region(frame, coords)
+
         face = self.p.apply_elliptical_mask(face)
         face = (face - 127.0) / 127.0
         face = face - face.mean()
@@ -69,7 +72,10 @@ class Frame:
         gray_face = cv2.normalize(altered_face,altered_face,0,255,cv2.NORM_MINMAX).astype(np.uint8)
         gray_face = self.p.apply_elliptical_mask(gray_face)
         #gray_face = ((altered_face+1.0)/2.0 * 255).astype(np.uint8)
-        frame = self.p.insert_face(frame, gray_face, coords)
+        if self.config.show_background:
+            frame = self.p.insert_face(frame, gray_face, coords)
+        else:
+            frame = self.p.insert_face(np.zeros(frame.shape, frame.dtype), gray_face, coords)
 
         return frame
 

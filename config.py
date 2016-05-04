@@ -12,4 +12,4 @@ class Config:
         self.eigen_h = config["EigenH"]
         self.face_min_w = config["FaceMinW"]
         self.face_min_h = config["FaceMinH"]
-
+        self.show_background = True if config["ShowBackground"] == "true" else False

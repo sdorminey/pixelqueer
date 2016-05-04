@@ -65,7 +65,8 @@ class Frame:
         resized_face = cv2.resize(face, (self.config.eigen_w, self.config.eigen_h), interpolation = cv2.INTER_LINEAR)
         altered_face = self.current.project(resized_face)
         altered_face = cv2.resize(altered_face, face.shape, interpolation = cv2.INTER_LINEAR)
-        gray_face = ((altered_face+1.0)/2.0 * 255).astype(np.uint8)
+        gray_face = cv2.normalize(altered_face,altered_face,0,255,cv2.NORM_MINMAX).astype(np.uint8)
+        #gray_face = ((altered_face+1.0)/2.0 * 255).astype(np.uint8)
         frame = self.p.insert_face(frame, gray_face, coords)
 
         return frame

@@ -20,7 +20,7 @@ class FaceProcessor:
             image,
             scaleFactor=1.1,
             minNeighbors=5,
-            minSize=(20, 20),
+            minSize=(50, 50),
             flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
 
         if len(all_face_coords) < 1:

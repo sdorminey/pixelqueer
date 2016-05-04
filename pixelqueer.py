@@ -24,7 +24,8 @@ def loadimage(image_path):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     coords = p.locate_face(frame)
-    assert coords != None
+    if coords == None:
+        return None
 
     face = p.extract_region(frame, coords)
     face = p.apply_elliptical_mask(face)
@@ -79,6 +80,7 @@ def load_faces(root_path, subfolder_name, max_faces):
     image_paths = [path.join(subfolder_path, f) for f in listdir(subfolder_path)]
     image_paths = image_paths[:max_faces]
     images = [loadimage(p) for p in image_paths]
+    images = [p for p in images if p != None]
     return (np.array([i.flatten() for i in images]), images[0].shape)
 
 def learn(training_data_path, max_eigenfaces, max_faces):

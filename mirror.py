@@ -44,6 +44,7 @@ class Frame:
         self.cam = cv2.VideoCapture(1)
         cv2.namedWindow("Video", cv2.WND_PROP_FULLSCREEN)          
         cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        cv2.setMouseCallback("Video", self.mouse_callback)
 
     def capture_image(self):
         # Get an image frame from the camera.
@@ -78,6 +79,12 @@ class Frame:
             frame = self.p.insert_face(np.zeros(frame.shape, frame.dtype), gray_face, coords)
 
         return frame
+
+    def mouse_callback(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.current = self.mtf_mirror
+        elif event == cv2.EVENT_RBUTTONDOWN:
+            self.current = self.ftm_mirror
 
     def loop(self):
         while True:

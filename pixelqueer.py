@@ -102,8 +102,7 @@ def swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, source_
     return target_face.reshape(source_image.shape)
 
 def alter_image(source_eigenfaces, target_eigenfaces, transition_matrix, source_image):
-    original_image = loadimage(source_image)
-    altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, load_image(source_image))
+    altered_image = swap_gender(source_eigenfaces, target_eigenfaces, transition_matrix, loadimage(source_image))
     return altered_image
 
 def plot_image(original_image, altered_image):

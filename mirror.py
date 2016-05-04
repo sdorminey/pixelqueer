@@ -4,6 +4,8 @@ import argparse
 import sys # More like cis am I right? (I'm not right.)
 import pickle
 import numpy as np
+from config import *
+from processor import *
 
 # Mirrors see a face from the camera, and project its dream of the face.
 class Mirror:
@@ -14,7 +16,8 @@ class Mirror:
 
     # Projects a source image onto a new, gender-bent target image.
     def project(self, source_image):
-        return queer.swap_gender(self.cis_eigenfaces, self.trans_eigenfaces, self.trans_matrix, source_image)
+        return source_image
+        #return queer.swap_gender(self.cis_eigenfaces, self.trans_eigenfaces, self.trans_matrix, source_image)
 
 # The frame holds two mirrors, letting the user toggle between them.
 class Frame:
@@ -28,6 +31,8 @@ class Frame:
 
         # Spin up mirrors.
         print "Spooling up the mirrors.."
+        self.config = Config()
+        self.p = FaceProcessor(self.config)
         self.mtf_mirror = Mirror(male_eigenfaces, female_eigenfaces, mtf_matrix)
         self.ftm_mirror = Mirror(female_eigenfaces, male_eigenfaces, ftm_matrix)
 
@@ -44,38 +49,32 @@ class Frame:
 
     def capture_image(self):
         # Get an image frame from the camera.
-        status, source_image = self.cam.read()
+        status, frame = self.cam.read()
 
-        # First, we need to crop and resize the image, so that it matches the 512x768 dimension of our eigenfaces.
-        # Let the original camera w and h be Cw and Ch, respectively. We want a rescaled Rw and Rh-image,
-        # with the same aspect ratio as the eigenfaces (Ew and Eh.)
-        # Assuming landscape mode, if Rh = Ch then Rw = (Ew/Eh) * Rh
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        coords = self.p.locate_face(frame)
+        if coords == None:
+            return frame
 
-        cam_h = source_image.shape[0]
-        cam_w = source_image.shape[1]
-        cropped_h = cam_h
-        cropped_w = int((self.eigen_w/float(self.eigen_h)) * cropped_h) # Round down, naturally.
+        cv2.rectangle(frame, (coords.x, coords.y), (coords.x+coords.w, coords.y+coords.h), 0, 2)
 
-        face = source_image[0:cropped_h, 0:cropped_w].astype(np.float32)
-
-        # Now to resize, so that we have dimensions Eh and Ew.
-        face = cv2.resize(face, (self.eigen_h, self.eigen_w), interpolation = cv2.INTER_LINEAR)
-
-        # Now go to grayscale and adjust so range is [-1, 1].
-        face = face.mean(axis=2)
+        face = self.p.extract_region(frame, coords)
         face = (face - 127.0) / 127.0
-
-        # Subtract the mean pixel value from the face.
         face = face - face.mean()
 
-        return face
+        resized_face = cv2.resize(face, (self.config.eigen_w, self.config.eigen_h), interpolation = cv2.INTER_LINEAR)
+        altered_face = self.current.project(resized_face)
+        altered_face = cv2.resize(altered_face, face.shape, interpolation = cv2.INTER_LINEAR)
+        gray_face = ((altered_face+1.0)/2.0 * 255).astype(np.uint8)
+        frame = self.p.insert_face(frame, gray_face, coords)
+
+        return frame
 
     def loop(self):
         while True:
             face = self.capture_image()
 
-            altered_image = self.current.project(face)
-            cv2.imshow("Video", altered_image)
+            cv2.imshow("Video", face)
 
             # This is necessary or the image won't display!
             keyPressed = cv2.waitKey(1)

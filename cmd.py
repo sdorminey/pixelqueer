@@ -1,4 +1,5 @@
 from pixelqueer import *
+import cv2
 
 def run(args):
     if args.action == "learn":
@@ -28,6 +29,9 @@ def run(args):
         else:
             print "Non-binary gender not yet supported :("
             return
+
+        cv2.imshow("Altered", altered_image)
+        cv2.waitKey(0)
 
         if args.out is not None:
             altered_image_to_save = Image.fromarray(((altered_image+1.0)/2.0 * 255).astype(np.uint8))

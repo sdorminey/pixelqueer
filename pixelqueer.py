@@ -27,6 +27,7 @@ def loadimage(image_path):
     assert coords != None
 
     face = p.extract_region(frame, coords)
+    face = p.apply_elliptical_mask(face)
     face = (face - 127.0) / 127.0
     face = face - face.mean()
 

@@ -59,6 +59,7 @@ class Frame:
         cv2.rectangle(frame, (coords.x, coords.y), (coords.x+coords.w, coords.y+coords.h), 0, 2)
 
         face = self.p.extract_region(frame, coords)
+        face = self.p.apply_elliptical_mask(face)
         face = (face - 127.0) / 127.0
         face = face - face.mean()
 
@@ -66,6 +67,7 @@ class Frame:
         altered_face = self.current.project(resized_face)
         altered_face = cv2.resize(altered_face, face.shape, interpolation = cv2.INTER_LINEAR)
         gray_face = cv2.normalize(altered_face,altered_face,0,255,cv2.NORM_MINMAX).astype(np.uint8)
+        gray_face = self.p.apply_elliptical_mask(gray_face)
         #gray_face = ((altered_face+1.0)/2.0 * 255).astype(np.uint8)
         frame = self.p.insert_face(frame, gray_face, coords)
 

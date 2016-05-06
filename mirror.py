@@ -41,7 +41,7 @@ class Frame:
 
         # Our camera is started here.
         print "Opening shutter.."
-        self.cam = cv2.VideoCapture(1)
+        self.cam = cv2.VideoCapture(0)
         cv2.namedWindow("Video", cv2.WND_PROP_FULLSCREEN)          
         cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
         cv2.setMouseCallback("Video", self.mouse_callback)

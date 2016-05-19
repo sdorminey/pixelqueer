@@ -1,6 +1,6 @@
 {
     "FaceClassifierFile": "brain/haarcascade_frontalface_default.xml",
-    "BrainFile": "brain/eig_32_img_128.mgs",
+    "BrainFile": "brain/64_eig_128_img.mgs",
     "EigenW": 256,
     "EigenH": 256,
     "FaceMinW": 100,

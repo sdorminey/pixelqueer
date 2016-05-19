@@ -21,9 +21,12 @@ class Mirror:
 
 # The frame holds two mirrors, letting the user toggle between them.
 class Frame:
-    def __init__(self, learn_file):
+    def __init__(self):
+        self.config = Config()
+
         # Pull the matrices from the brain file.
         print "Unpickling brain in formaldehyde.."
+        learn_file = open(self.config.brain_file, "rb")
         male_eigenfaces = pickle.load(learn_file)
         female_eigenfaces = pickle.load(learn_file)
         mtf_matrix = pickle.load(learn_file)
@@ -31,7 +34,6 @@ class Frame:
 
         # Spin up mirrors.
         print "Spooling up the mirrors.."
-        self.config = Config()
         self.p = FaceProcessor(self.config)
         self.mtf_mirror = Mirror(male_eigenfaces, female_eigenfaces, mtf_matrix)
         self.ftm_mirror = Mirror(female_eigenfaces, male_eigenfaces, ftm_matrix)
@@ -106,10 +108,6 @@ class Frame:
             if keyPressed == ord('m'):
                 self.current = self.ftm_mirror
     
-parser = argparse.ArgumentParser(description="Pixelqueer mirror")
-parser.add_argument("brain", help="Path to brain file (created by cmd.py)")
-args = parser.parse_args(sys.argv[1:])
-
 # Create the frame and run forever within it.
-frame = Frame(open(args.brain, "rb"))
+frame = Frame()
 frame.loop()

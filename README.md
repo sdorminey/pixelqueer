@@ -1,3 +1,8 @@
+# How to Run
+$ python2 mirror.py
+
+You can muck around with config.json if you want to do something special.
+
 # pixelqueer
 Gender-bends your face, with support for both MTF and FTM, using an algorithm based on eigenfaces. Useful for trans folks who are curious about how they might look after facial feminization surgery (FFS.)
 

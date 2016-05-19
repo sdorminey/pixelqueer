@@ -41,7 +41,7 @@ class Frame:
 
         # Our camera is started here.
         print "Opening shutter.."
-        self.cam = cv2.VideoCapture(0)
+        self.cam = cv2.VideoCapture(self.config.camera)
         cv2.namedWindow("Video", cv2.WND_PROP_FULLSCREEN)          
         cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
         cv2.setMouseCallback("Video", self.mouse_callback)
@@ -51,7 +51,12 @@ class Frame:
         status, frame = self.cam.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        frame = frame.transpose().copy()
+
+        # In portrait mode, we need to flip the frame around (assuming the camera streams in landscape.)
+        if self.config.portrait_mode:
+            frame = frame.transpose()
+        frame = frame.copy()
+
         coords = self.p.locate_face(frame)
         if coords == None:
             if self.config.show_background:

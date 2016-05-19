@@ -5,5 +5,7 @@
     "EigenH": 256,
     "FaceMinW": 100,
     "FaceMinH": 100,
-    "ShowBackground": "true"
+    "ShowBackground": "true",
+    "Camera": 0,
+    "PortraitMode": "false"
 }

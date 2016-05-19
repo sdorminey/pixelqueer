@@ -13,3 +13,5 @@ class Config:
         self.face_min_w = config["FaceMinW"]
         self.face_min_h = config["FaceMinH"]
         self.show_background = True if config["ShowBackground"] == "true" else False
+        self.camera = config["Camera"]
+        self.portrait_mode = True if config["PortraitMode"] == "true" else False
